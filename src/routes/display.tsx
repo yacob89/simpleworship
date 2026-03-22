@@ -26,18 +26,18 @@ function LiveDisplay() {
 
   if (!state.content) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-black text-gray-500">
+      <main className="flex h-screen w-full items-center justify-center overflow-hidden bg-black text-gray-500">
         <p className="text-2xl italic">Ready to display...</p>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-black px-12 py-8 text-white">
-      <section className="flex flex-1 flex-col items-center justify-center text-center">
+    <main className="flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-black px-12 py-8 text-white">
+      <section className="flex w-full flex-1 flex-col items-center justify-center overflow-hidden text-center">
         {/* Large, centered paragraph content */}
         <p
-          className="whitespace-pre-wrap text-5xl font-bold leading-tight sm:text-6xl md:text-7xl lg:text-8xl"
+          className="max-h-full w-full whitespace-pre-wrap text-5xl font-bold leading-tight sm:text-6xl md:text-7xl lg:text-8xl"
           style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}
         >
           {state.content}
@@ -45,7 +45,7 @@ function LiveDisplay() {
       </section>
 
       {/* Footer with song details (minimal) */}
-      <footer className="mt-8 flex w-full justify-end border-t border-white/20 pt-4 opacity-50">
+      <footer className="mt-4 flex w-full justify-end border-t border-white/20 pt-4 opacity-50">
         <div className="text-right">
           <p className="text-xl font-semibold">{state.title}</p>
           <p className="text-sm">{state.artist}</p>

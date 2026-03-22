@@ -1,4 +1,4 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import Footer from '../components/Footer'
@@ -30,7 +30,21 @@ export const Route = createRootRoute({
     ],
   }),
   shellComponent: RootDocument,
+  component: RootComponent,
 })
+
+function RootComponent() {
+  const location = useLocation()
+  const isDisplayRoute = location.pathname === '/display'
+
+  return (
+    <>
+      {!isDisplayRoute && <Header />}
+      <Outlet />
+      {!isDisplayRoute && <Footer />}
+    </>
+  )
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -40,9 +54,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
-        <Header />
         {children}
-        <Footer />
         <TanStackDevtools
           config={{
             position: 'bottom-right',
