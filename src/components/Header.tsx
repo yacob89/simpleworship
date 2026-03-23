@@ -6,7 +6,6 @@ import {
   Box,
   Container,
   IconButton,
-  alpha,
 } from '@mui/material'
 import { Link, useLocation } from '@tanstack/react-router'
 import { Settings, AccountCircle } from '@mui/icons-material'
@@ -15,7 +14,6 @@ export default function Header() {
   const location = useLocation()
 
   const navItems = [
-    { label: 'Home', to: '/' },
     { label: 'Library', to: '/' }, // Library is integrated into Home in this design
     { label: 'Docs', to: '/about' },
   ]
