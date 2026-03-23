@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Box, Container, Typography, Card } from '@mui/material'
 
 export const Route = createFileRoute('/about')({
   component: About,
@@ -6,18 +7,54 @@ export const Route = createFileRoute('/about')({
 
 function About() {
   return (
-    <main className="page-wrap px-4 py-12">
-      <section className="island-shell rounded-2xl p-6 sm:p-8">
-        <p className="island-kicker mb-2">About</p>
-        <h1 className="display-title mb-3 text-4xl font-bold text-[var(--sea-ink)] sm:text-5xl">
-          A small starter with room to grow.
-        </h1>
-        <p className="m-0 max-w-3xl text-base leading-8 text-[var(--sea-ink-soft)]">
-          TanStack Start gives you type-safe routing, server functions, and
-          modern SSR defaults. Use this as a clean foundation, then layer in
-          your own routes, styling, and add-ons.
-        </p>
-      </section>
-    </main>
+    <Box
+      sx={{
+        pt: 12,
+        pb: 8,
+        minHeight: '100vh',
+        backgroundColor: 'background.default',
+      }}
+    >
+      <Container maxWidth="md">
+        <Card sx={{ p: { xs: 4, md: 8 } }}>
+          <Typography
+            variant="overline"
+            sx={{
+              display: 'block',
+              mb: 2,
+              color: 'primary.main',
+              fontWeight: 800,
+            }}
+          >
+            About
+          </Typography>
+          <Typography
+            variant="h2"
+            sx={{
+              mb: 4,
+              fontSize: { xs: '2.5rem', md: '3.5rem' },
+              lineHeight: 1.1,
+            }}
+          >
+            A high-end, editorial foundation for worship.
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'text.secondary',
+              fontSize: '1.25rem',
+              lineHeight: 1.8,
+              maxWidth: '800px',
+            }}
+          >
+            SimpleWorship is built upon "The Editorial Archive" design
+            philosophy. Utilizing Material UI and TanStack Start, we've created
+            a gallery-like experience that prioritizes white space, typography,
+            and tonal depth. This provides a clean, authoritative environment
+            for managing and presenting worship content.
+          </Typography>
+        </Card>
+      </Container>
+    </Box>
   )
 }

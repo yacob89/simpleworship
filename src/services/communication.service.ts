@@ -1,13 +1,13 @@
-import type { IDisplayState } from '../models/display-state';
+import type { IDisplayState } from '../models/display-state'
 
 /**
  * Interface for the communication service.
  * Supports sending and receiving display states across tabs.
  */
 export interface ICommunicationService {
-  broadcast(state: IDisplayState): void;
-  onReceive(callback: (state: IDisplayState) => void): () => void;
-  close(): void;
+  broadcast: (state: IDisplayState) => void
+  onReceive: (callback: (state: IDisplayState) => void) => () => void
+  close: () => void
 }
 
 /**
@@ -15,18 +15,18 @@ export interface ICommunicationService {
  * Ensures cross-tab synchronization on the same origin.
  */
 export class BroadcastChannelService implements ICommunicationService {
-  private readonly channel: BroadcastChannel;
-  private readonly CHANNEL_NAME = 'worship_display_channel';
+  private readonly channel: BroadcastChannel
+  private readonly CHANNEL_NAME = 'worship_display_channel'
 
   constructor() {
-    this.channel = new BroadcastChannel(this.CHANNEL_NAME);
+    this.channel = new BroadcastChannel(this.CHANNEL_NAME)
   }
 
   /**
    * Broadcasts the display state to all other tabs.
    */
   public broadcast(state: IDisplayState): void {
-    this.channel.postMessage(state);
+    this.channel.postMessage(state)
   }
 
   /**
@@ -35,20 +35,20 @@ export class BroadcastChannelService implements ICommunicationService {
    */
   public onReceive(callback: (state: IDisplayState) => void): () => void {
     const handler = (event: MessageEvent<IDisplayState>) => {
-      callback(event.data);
-    };
+      callback(event.data)
+    }
 
-    this.channel.addEventListener('message', handler);
-    return () => this.channel.removeEventListener('message', handler);
+    this.channel.addEventListener('message', handler)
+    return () => this.channel.removeEventListener('message', handler)
   }
 
   /**
    * Closes the communication channel.
    */
   public close(): void {
-    this.channel.close();
+    this.channel.close()
   }
 }
 
 // Export a singleton instance.
-export const communicationService = new BroadcastChannelService();
+export const communicationService = new BroadcastChannelService()

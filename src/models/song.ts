@@ -3,10 +3,10 @@
  * Follows SRP by focusing only on data structure.
  */
 export interface ISong {
-  id: string;
-  title: string;
-  artist: string;
-  rawText: string;
+  id: string
+  title: string
+  artist: string
+  rawText: string
 }
 
 /**
@@ -14,15 +14,15 @@ export interface ISong {
  * Encapsulates the logic for parsing raw text into paragraphs.
  */
 export class Song implements ISong {
-  public readonly paragraphs: string[];
+  public readonly paragraphs: string[]
 
   constructor(
     public readonly id: string,
     public readonly title: string,
     public readonly artist: string,
-    public readonly rawText: string
+    public readonly rawText: string,
   ) {
-    this.paragraphs = this.parseText(rawText);
+    this.paragraphs = this.parseText(rawText)
   }
 
   /**
@@ -33,6 +33,6 @@ export class Song implements ISong {
     return text
       .split(/\n\s*\n/)
       .map((p) => p.trim())
-      .filter((p) => p.length > 0);
+      .filter((p) => p.length > 0)
   }
 }

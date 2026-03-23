@@ -3,33 +3,59 @@ import { useState, useMemo } from 'react'
 import { songRepository } from '../repositories/song.repository'
 import { communicationService } from '../services/communication.service'
 import { DisplayState } from '../models/display-state'
-import { Song } from '../models/song'
-import { Monitor, Music, ExternalLink, Play, Trash2 } from 'lucide-react'
+import type { Song } from '../models/song'
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  TextField,
+  Card,
+  IconButton,
+  InputAdornment,
+  Stack,
+  alpha,
+  Divider,
+  Grid,
+} from '@mui/material'
+import { Search, Add, OpenInNew, DragIndicator } from '@mui/icons-material'
 
 export const Route = createFileRoute('/')({ component: Controller })
 
 /**
  * Controller Dashboard.
- * Allows users to select songs and manage live display.
+ * Redesigned with Material UI following "The Editorial Archive" design system.
  */
 function Controller() {
-  const [selectedSong, setSelectedSong] = useState<Song | null>(null)
+  const [selectedSong, setSelectedSong] = useState<Song | null>(
+    songRepository.getAll()[0] || null,
+  )
   const [liveIndex, setLiveIndex] = useState<number | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+
   const songs = useMemo(() => songRepository.getAll(), [])
+
+  const filteredSongs = useMemo(() => {
+    return songs.filter(
+      (s) =>
+        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.artist.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+  }, [songs, searchQuery])
 
   /**
    * Updates the live display state and broadcasts it.
    */
   const setLive = (index: number | null) => {
     setLiveIndex(index)
-    
+
     if (selectedSong && index !== null) {
       const newState = new DisplayState(
         selectedSong.id,
         index,
         selectedSong.title,
         selectedSong.artist,
-        selectedSong.paragraphs[index]
+        selectedSong.paragraphs[index],
       )
       communicationService.broadcast(newState)
     } else {
@@ -45,113 +71,361 @@ function Controller() {
   }
 
   return (
-    <main className="grid h-[calc(100vh-64px)] grid-cols-12 gap-4 p-4 lg:p-6">
+    <Box
+      sx={{
+        display: 'flex',
+        minHeight: 'calc(100vh - 64px)',
+        mt: '64px',
+        backgroundColor: 'background.default',
+      }}
+    >
       {/* Sidebar: Song Library */}
-      <aside className="island-shell col-span-12 flex flex-col overflow-hidden rounded-2xl md:col-span-4 lg:col-span-3">
-        <header className="flex items-center justify-between border-b border-gray-100 p-4 bg-gray-50/50">
-          <div className="flex items-center gap-2 font-bold text-[var(--sea-ink)]">
-            <Music size={18} className="text-[var(--lagoon-deep)]" />
-            <span>Song Library</span>
-          </div>
-        </header>
-        
-        <div className="flex-1 overflow-y-auto p-2">
-          {songs.map((song) => (
-            <button
-              key={song.id}
-              onClick={() => {
-                setSelectedSong(song)
-                setLiveIndex(null)
-              }}
-              className={`w-full rounded-xl p-3 text-left transition ${
-                selectedSong?.id === song.id
-                  ? 'bg-[var(--lagoon-deep)] text-white shadow-md shadow-cyan-900/20'
-                  : 'hover:bg-gray-100 text-[var(--sea-ink-soft)]'
-              }`}
-            >
-              <p className="font-semibold">{song.title}</p>
-              <p className={`text-xs ${selectedSong?.id === song.id ? 'text-cyan-100' : 'text-gray-400'}`}>
-                {song.artist}
-              </p>
-            </button>
-          ))}
-        </div>
-      </aside>
+      <Box
+        component="aside"
+        sx={{
+          width: { lg: 320, xl: 360 },
+          display: { xs: 'none', lg: 'flex' },
+          flexDirection: 'column',
+          backgroundColor: '#f1f4f6', // surface-container-low
+          p: 4,
+          position: 'sticky',
+          top: 64,
+          height: 'calc(100vh - 64px)',
+          overflowY: 'auto',
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 3,
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>
+            Song Library
+          </Typography>
+          <IconButton color="primary" size="small">
+            <Add />
+          </IconButton>
+        </Box>
 
-      {/* Main: Control Panel */}
-      <section className="island-shell col-span-12 flex flex-col overflow-hidden rounded-2xl md:col-span-8 lg:col-span-9">
-        <header className="flex items-center justify-between border-b border-gray-100 p-4 bg-gray-50/50">
-          <div className="flex flex-col">
-            <h2 className="text-xl font-bold text-[var(--sea-ink)]">
-              {selectedSong ? selectedSong.title : 'Select a Song'}
-            </h2>
-            <p className="text-sm text-[var(--sea-ink-soft)]">
-              {selectedSong?.artist || 'Choose from the library to start'}
-            </p>
-          </div>
-          
-          <div className="flex gap-2">
-            <button
-              onClick={() => setLive(null)}
-              className="flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 transition"
-              title="Clear Display"
-            >
-              <Trash2 size={16} />
-              <span className="hidden sm:inline">Clear</span>
-            </button>
-            <button
-              onClick={openDisplay}
-              className="flex items-center gap-2 rounded-lg bg-[rgba(79,184,178,0.14)] px-3 py-2 text-sm font-medium text-[var(--lagoon-deep)] hover:bg-[rgba(79,184,178,0.24)] border border-[rgba(50,143,151,0.3)] transition"
-            >
-              <Monitor size={16} />
-              <span className="hidden sm:inline">Open Display</span>
-              <ExternalLink size={14} />
-            </button>
-          </div>
-        </header>
+        {/* Search Bar */}
+        <TextField
+          fullWidth
+          variant="filled"
+          placeholder="Search songs..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            disableUnderline: true,
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search sx={{ color: 'text.secondary', fontSize: 20 }} />
+              </InputAdornment>
+            ),
+            sx: {
+              borderRadius: 3,
+              backgroundColor: '#ffffff',
+              '&:hover': {
+                backgroundColor: '#ffffff',
+              },
+              '&.Mui-focused': {
+                backgroundColor: '#ffffff',
+              },
+            },
+          }}
+          sx={{ mb: 3 }}
+        />
 
-        <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-gray-50/30">
-          {!selectedSong ? (
-            <div className="flex h-full flex-col items-center justify-center text-center opacity-40">
-              <div className="mb-4 rounded-full bg-gray-200 p-6">
-                <Play size={48} className="text-gray-400" />
-              </div>
-              <p className="text-lg">No song selected</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              {selectedSong.paragraphs.map((paragraph, index) => (
-                <button
-                  key={index}
-                  onClick={() => setLive(index)}
-                  className={`relative flex min-h-[140px] flex-col rounded-2xl border-2 p-5 text-left transition-all ${
-                    liveIndex === index
-                      ? 'border-[var(--lagoon-deep)] bg-cyan-50 shadow-lg ring-1 ring-[var(--lagoon-deep)]'
-                      : 'border-white bg-white hover:border-gray-200 hover:shadow-md'
-                  }`}
+        {/* Song List */}
+        <Stack spacing={1} sx={{ flex: 1 }}>
+          {filteredSongs.map((song) => {
+            const isSelected = selectedSong?.id === song.id
+            return (
+              <Box
+                key={song.id}
+                onClick={() => {
+                  setSelectedSong(song)
+                  setLiveIndex(null)
+                }}
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: isSelected
+                    ? alpha('#076968', 0.1)
+                    : 'transparent',
+                  borderLeft: isSelected
+                    ? '4px solid #076968'
+                    : '4px solid transparent',
+                  '&:hover': {
+                    backgroundColor: isSelected
+                      ? alpha('#076968', 0.15)
+                      : alpha('#000', 0.04),
+                  },
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 700, color: 'black' }}
                 >
-                  <span className={`mb-3 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${
-                    liveIndex === index ? 'bg-[var(--lagoon-deep)] text-white' : 'bg-gray-100 text-gray-400'
-                  }`}>
-                    {index + 1}
-                  </span>
-                  <p className={`whitespace-pre-wrap text-sm leading-relaxed ${
-                    liveIndex === index ? 'text-[var(--sea-ink)] font-medium' : 'text-[var(--sea-ink-soft)]'
-                  }`}>
-                    {paragraph}
-                  </p>
-                  {liveIndex === index && (
-                    <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-[var(--lagoon-deep)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white animate-pulse">
-                      <div className="h-1.5 w-1.5 rounded-full bg-white" />
-                      Live
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-    </main>
+                  {song.title}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  {song.artist}
+                </Typography>
+              </Box>
+            )
+          })}
+        </Stack>
+      </Box>
+
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          flex: 1,
+          p: { xs: 4, md: 6, lg: 8 },
+          backgroundColor: 'background.default',
+          overflowY: 'auto',
+        }}
+      >
+        {selectedSong ? (
+          <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+            {/* Header Section */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                alignItems: { md: 'flex-end' },
+                justifyContent: 'space-between',
+                mb: 6,
+                gap: 3,
+              }}
+            >
+              <Box>
+                <Typography
+                  variant="overline"
+                  sx={{
+                    display: 'inline-block',
+                    px: 1.5,
+                    py: 0.5,
+                    backgroundColor: '#eaeff1',
+                    borderRadius: 10,
+                    mb: 2,
+                    color: 'text.secondary',
+                  }}
+                >
+                  Now Presenting
+                </Typography>
+                <Typography
+                  variant="h2"
+                  sx={{ fontSize: { xs: '2.5rem', md: '3.5rem' }, mb: 1 }}
+                >
+                  {selectedSong.title}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ color: 'text.secondary', fontSize: '1.125rem' }}
+                >
+                  {selectedSong.artist} •{' '}
+                  <Box
+                    component="span"
+                    sx={{ fontStyle: 'italic', fontWeight: 600 }}
+                  >
+                    Hymns of Faith
+                  </Box>
+                </Typography>
+              </Box>
+
+              <Stack direction="row" spacing={2}>
+                <Button
+                  onClick={() => setLive(null)}
+                  sx={{
+                    color: 'primary.main',
+                    '&:hover': { backgroundColor: alpha('#076968', 0.05) },
+                  }}
+                >
+                  Clear
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={openDisplay}
+                  startIcon={<OpenInNew />}
+                >
+                  Open Display
+                </Button>
+              </Stack>
+            </Box>
+
+            {/* Lyrics Grid */}
+            <Grid container spacing={4} sx={{ mb: 8 }}>
+              {selectedSong.paragraphs.map((paragraph, index) => {
+                const isLive = liveIndex === index
+                return (
+                  <Grid item xs={12} md={isLive ? 12 : 6} key={index}>
+                    <Card
+                      onClick={() => setLive(index)}
+                      sx={{
+                        p: 4,
+                        cursor: 'pointer',
+                        transition: 'all 0.3s',
+                        position: 'relative',
+                        borderLeft: isLive ? '4px solid #076968' : 'none',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.06)',
+                        },
+                        backgroundColor: isLive
+                          ? alpha('#076968', 0.02)
+                          : 'background.paper',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          mb: 3,
+                        }}
+                      >
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            fontStyle: 'italic',
+                            color: isLive
+                              ? 'primary.main'
+                              : alpha('#abb3b7', 0.4),
+                            fontWeight: 800,
+                          }}
+                        >
+                          {String(index + 1).padStart(2, '0')}
+                        </Typography>
+                        {isLive ? (
+                          <Box
+                            sx={{
+                              px: 1.5,
+                              py: 0.5,
+                              backgroundColor: 'primary.main',
+                              color: 'primary.contrastText',
+                              borderRadius: 10,
+                              fontSize: '0.625rem',
+                              fontWeight: 900,
+                              letterSpacing: '0.1em',
+                              animation: 'pulse 2s infinite',
+                            }}
+                          >
+                            LIVE
+                          </Box>
+                        ) : (
+                          <DragIndicator
+                            sx={{ color: alpha('#abb3b7', 0.4) }}
+                          />
+                        )}
+                      </Box>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: isLive ? '1.5rem' : '1.25rem',
+                          whiteSpace: 'pre-line',
+                          fontWeight: isLive ? 500 : 400,
+                          color: 'black',
+                        }}
+                      >
+                        {paragraph}
+                      </Typography>
+                    </Card>
+                  </Grid>
+                )
+              })}
+            </Grid>
+
+            <Divider sx={{ mb: 6, opacity: 0.1 }} />
+
+            {/* Metadata Section */}
+            <Grid container spacing={6}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                  Performance Notes
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'text.secondary' }}
+                >
+                  Traditional arrangement. Recommended tempo: 72 BPM. Lead
+                  with acoustic guitar or piano for a warm, intimate
+                  opening. The transition between Stanza 2 and 3 should
+                  swell in intensity.
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Grid container spacing={2}>
+                  {[
+                    { label: 'Key Signature', value: 'G Major' },
+                    { label: 'Time Sig', value: '3/4' },
+                    { label: 'Language', value: 'English' },
+                    { label: 'Tags', value: 'Hymn' },
+                  ].map((meta) => (
+                    <Grid item xs={6} key={meta.label}>
+                      <Box
+                        sx={{
+                          p: 2,
+                          backgroundColor: '#f1f4f6',
+                          borderRadius: 3,
+                        }}
+                      >
+                        <Typography
+                          variant="overline"
+                          sx={{
+                            display: 'block',
+                            mb: 0.5,
+                            color: 'text.secondary',
+                          }}
+                        >
+                          {meta.label}
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{ fontSize: '1rem', fontWeight: 800 }}
+                        >
+                          {meta.value}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Grid>
+            </Grid>
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              height: '60vh',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: 0.3,
+            }}
+          >
+            <Typography variant="h4">Select a song to begin</Typography>
+          </Box>
+        )}
+      </Box>
+
+      {/* Pulse Animation for LIVE indicator */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        @keyframes pulse {
+          0% { opacity: 1; }
+          50% { opacity: 0.6; }
+          100% { opacity: 1; }
+        }
+      `,
+        }}
+      />
+    </Box>
   )
 }
