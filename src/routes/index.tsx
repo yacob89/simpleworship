@@ -6,7 +6,6 @@ import { DisplayState } from '../models/display-state'
 import type { Song } from '../models/song'
 import {
   Box,
-  Container,
   Typography,
   Button,
   TextField,
@@ -265,7 +264,7 @@ function Controller() {
               {selectedSong.paragraphs.map((paragraph, index) => {
                 const isLive = liveIndex === index
                 return (
-                  <Grid item xs={12} md={isLive ? 12 : 6} key={index}>
+                  <Grid size={{ xs: 12, md: isLive ? 12 : 6 }} key={index}>
                     <Card
                       onClick={() => setLive(index)}
                       sx={{
@@ -345,7 +344,7 @@ function Controller() {
 
             {/* Metadata Section */}
             <Grid container spacing={6}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                   Performance Notes
                 </Typography>
@@ -359,7 +358,7 @@ function Controller() {
                   swell in intensity.
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Grid container spacing={2}>
                   {[
                     { label: 'Key Signature', value: 'G Major' },
@@ -367,7 +366,7 @@ function Controller() {
                     { label: 'Language', value: 'English' },
                     { label: 'Tags', value: 'Hymn' },
                   ].map((meta) => (
-                    <Grid item xs={6} key={meta.label}>
+                    <Grid size={6} key={meta.label}>
                       <Box
                         sx={{
                           p: 2,

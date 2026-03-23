@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { communicationService } from '../services/communication.service'
 import { DisplayState } from '../models/display-state'
 import type { IDisplayState } from '../models/display-state'
-import { Box, Typography, Container, Fade } from '@mui/material'
+import { Box, Typography, Fade } from '@mui/material'
 
 export const Route = createFileRoute('/display')({
   component: LiveDisplay,
